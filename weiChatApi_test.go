@@ -1,18 +1,31 @@
 package HiWeiChatApi
 
 import (
-	// "encoding/json"
+	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	_ "strings"
 	"testing"
 )
 
+var appId string = ""
+var secret string = ""
+var accessToken string = ""
+var openId string = "openxxxsssaaa"
+
 func TestCustomerNewsMsg(t *testing.T) {
 
 }
 func TestCustomerTextMsg(t *testing.T) {
+	resp := `{"errcode" : 0,"errmsg" : "ok"}`
+	by := []byte(resp)
 
+	wxRe := WeiChatResponse{}
+	json.Unmarshal(by, &wxRe)
+	fmt.Println(wxRe)
+	// textMsg := NewCustomerTextMsg(openId, "test TextMsg")
+	// data, err := textMsg.Data()
+	// fmt.Println(string(data), err)
 }
 func TestCustomerImageMsg(t *testing.T) {
 

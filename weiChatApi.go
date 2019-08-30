@@ -23,7 +23,7 @@ func (api *WeiChatAPI) ReceiveCommonMsg(msgData []byte) (WxReceiveCommonMsg, err
 	if api.receiveFunc == nil {
 		return msg, err
 	}
-	err = receiveFunc(msg)
+	err = api.receiveFunc(msg)
 	return msg, err
 }
 func WeiChat(logger *log.Logger, revFunc WxReceiveFunc) *WeiChatAPI {
@@ -61,8 +61,18 @@ func (api *WeiChatAPI) SendTemplateMsg(accessToken string, json []byte) {
 	fmt.Println(string(body), err)
 }
 
-func (api *WeiChatAPI) SendCustomMsg(json string) {
+func (api *WeiChatAPI) SendCustomMsg(accessToken string, msg *CustomerMsg) (WeiChatResponse, error) {
+	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=%s", accessToken)
+	data, err := msg.Data()
+	if err != nil {
+		return nil, err
+	}
 
+	ret, err := Post(url, data, nil)
+	if err != nil {
+		return nil, err
+	}
+	return msg.ResponseParse(ret), err
 }
 
 func (api *WeiChatAPI) MakeSignature(token, timestamp, nonce string) string {

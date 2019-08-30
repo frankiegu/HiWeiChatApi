@@ -2,11 +2,40 @@ package HiWeiChatApi
 
 import (
 	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
 )
+
+type WeiChatConfig struct {
+}
+
+type WeiChatResponse struct {
+	ErrNo  int    `json:"errno"`
+	ErrMsg string `json:"errmsg"`
+	MsgId  int64  `json:"msgid"`
+}
+
+type CustomerMsg struct {
+	Msg interface{}
+}
+
+func (c *CustomerMsg) Data() ([]byte, error) {
+	if c.Msg == nil {
+		return nil, errors.New("msg is empty")
+	}
+	data, err := json.Marshal(c.Msg)
+	return data, err
+}
+
+func ResponseParse(resp []byte) WeiChatResponse {
+	wxRe := WeiChatResponse{}
+	json.Unmarshal(resp, &wxRe)
+	return wxRe
+}
 
 type customerNewsMsg struct {
 	ToUser             string `json:"touser"`
@@ -23,11 +52,15 @@ type customeNewArticleEle struct {
 	PicUrl      string `json:'picurl'`
 }
 
-func NewCustomerNewsMsg(toUser string, article customerNewArticle) *customerNewsMsg {
-	return &customerNewsMsg{
+func NewCustomerNewsMsg(toUser string, article customerNewArticle) *CustomerMsg {
+
+	msg := customerNewsMsg{
 		ToUser:             toUser,
 		MsgType:            "news",
 		customerNewArticle: article,
+	}
+	return &CustomerMsg{
+		Msg: msg,
 	}
 }
 
@@ -50,12 +83,15 @@ type customerTextContent struct {
 	Content string `json:"content"`
 }
 
-func NewCustomerTextMsg(toUser string, content string) *customerTextMsg {
+func NewCustomerTextMsg(toUser string, content string) *CustomerMsg {
 	text := customerTextContent{Content: content}
-	return &customerTextMsg{
+	msg := customerTextMsg{
 		ToUser:              toUser,
 		MsgType:             "text",
 		customerTextContent: text,
+	}
+	return &CustomerMsg{
+		Msg: msg,
 	}
 }
 
@@ -68,12 +104,15 @@ type customerImageContent struct {
 	MediaId string `json:"media_id"`
 }
 
-func NewCustomerImageMsg(toUser string, mediaId string) *customerImageMsg {
+func NewCustomerImageMsg(toUser string, mediaId string) *CustomerMsg {
 	Media := customerImageContent{MediaId: mediaId}
-	return &customerImageMsg{
+	msg := customerImageMsg{
 		ToUser:               toUser,
 		MsgType:              "text",
 		customerImageContent: Media,
+	}
+	return &CustomerMsg{
+		Msg: msg,
 	}
 }
 
@@ -93,6 +132,37 @@ type WxReceiveCommonMsg struct {
 }
 
 type WxReceiveFunc func(msg WxReceiveCommonMsg) error
+
+type WxTemplateMsg struct {
+	ToUser       string `json:"touser"`
+	TemplateId   string `json:"template_id"`
+	Url          string `json:"url"`
+	MiniPrograme `json:"miniprogram"`
+	Data         map[string]WxTemplateEle `json:"data"`
+}
+type MiniPrograme struct {
+	AppId    string `json:"appid"`
+	PagePath string `json:"pagepath"`
+}
+type WxTemplateEle struct {
+	Value string `json:"value"`
+	Color string `json:"color"`
+}
+
+func (wxt *WxTemplateMsg) Data() {
+	//会不会序列话函数？
+	data, err := json.Marshal(c.Msg)
+}
+func NewWxTemplateMsg(toUser, tmpId, url string, mini MiniPrograme, data map[string]WxTemplateEle) {
+	tMsg := WxTemplateMsg{
+		ToUser:       toUser,
+		TemplateId:   tmpId,
+		Url:          url,
+		MiniPrograme: mini,
+		Data:         data,
+	}
+
+}
 
 func Post(url string, paramBody []byte, header map[string]string) ([]byte, error) {
 	client := &http.Client{}
