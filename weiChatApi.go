@@ -63,14 +63,14 @@ func (api *WeiChatAPI) SendTemplateMsg(accessToken string, json []byte) {
 
 func (api *WeiChatAPI) SendCustomMsg(accessToken string, msg *CustomerMsg) (WeiChatResponse, error) {
 	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=%s", accessToken)
-	data, err := msg.Data()
+	data, err := msg.Marshal()
 	if err != nil {
-		return nil, err
+		return msg.ResponseParse(nil), err
 	}
 
 	ret, err := Post(url, data, nil)
 	if err != nil {
-		return nil, err
+		return msg.ResponseParse(nil), err
 	}
 	return msg.ResponseParse(ret), err
 }

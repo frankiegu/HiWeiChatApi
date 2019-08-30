@@ -23,7 +23,7 @@ type CustomerMsg struct {
 	Msg interface{}
 }
 
-func (c *CustomerMsg) Data() ([]byte, error) {
+func (c *CustomerMsg) Marshal() ([]byte, error) {
 	if c.Msg == nil {
 		return nil, errors.New("msg is empty")
 	}
@@ -31,8 +31,11 @@ func (c *CustomerMsg) Data() ([]byte, error) {
 	return data, err
 }
 
-func ResponseParse(resp []byte) WeiChatResponse {
+func (c *CustomerMsg) ResponseParse(resp []byte) WeiChatResponse {
 	wxRe := WeiChatResponse{}
+	if resp == nil || len(resp) < 1 {
+		return wxRe
+	}
 	json.Unmarshal(resp, &wxRe)
 	return wxRe
 }
@@ -149,12 +152,12 @@ type WxTemplateEle struct {
 	Color string `json:"color"`
 }
 
-func (wxt *WxTemplateMsg) Data() {
-	//会不会序列话函数？
-	data, err := json.Marshal(c.Msg)
+func (wxt *WxTemplateMsg) Marshal() ([]byte, error) {
+	data, err := json.Marshal(wxt)
+	return data, err
 }
-func NewWxTemplateMsg(toUser, tmpId, url string, mini MiniPrograme, data map[string]WxTemplateEle) {
-	tMsg := WxTemplateMsg{
+func NewWxTemplateMsg(toUser, tmpId, url string, mini MiniPrograme, data map[string]WxTemplateEle) *WxTemplateMsg {
+	return &WxTemplateMsg{
 		ToUser:       toUser,
 		TemplateId:   tmpId,
 		Url:          url,
