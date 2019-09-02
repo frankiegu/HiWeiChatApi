@@ -16,16 +16,6 @@ type WeiChatAPI struct {
 	receiveFunc WxReceiveFunc
 }
 
-func (api *WeiChatAPI) ReceiveCommonMsg(msgData []byte) (WxReceiveCommonMsg, error) {
-
-	msg := WxReceiveCommonMsg{}
-	err := xml.Unmarshal(msgData, &msg)
-	if api.receiveFunc == nil {
-		return msg, err
-	}
-	err = api.receiveFunc(msg)
-	return msg, err
-}
 func WeiChat(logger *log.Logger, revFunc WxReceiveFunc) *WeiChatAPI {
 	if logger == nil {
 		// logger = log.New(l.dest, , log.Ldate|log.Ltime|log.Lshortfile)
@@ -36,12 +26,27 @@ func WeiChat(logger *log.Logger, revFunc WxReceiveFunc) *WeiChatAPI {
 	}
 }
 
-func (api *WeiChatAPI) GenerateWxTemplateMsgFormat(openId string, templateId string, content map[string]interface{}) ([]byte, error) {
-	content["touser"] = openId
-	content["template_id"] = templateId
-	jsonData, err := json.Marshal(content)
-	return jsonData, err
+func (api *WeiChatAPI) ReceiveFunc(revFunc WxReceiveFunc) {
+	api.receiveFunc = revFunc
 }
+
+func (api *WeiChatAPI) ReceiveCommonMsg(msgData []byte) (WxReceiveCommonMsg, error) {
+
+	msg := WxReceiveCommonMsg{}
+	err := xml.Unmarshal(msgData, &msg)
+	if api.receiveFunc == nil {
+		return msg, err
+	}
+	err = api.receiveFunc(msg)
+	return msg, err
+}
+
+// func (api *WeiChatAPI) GenerateWxTemplateMsgFormat(openId string, templateId string, content map[string]interface{}) ([]byte, error) {
+// 	content["touser"] = openId
+// 	content["template_id"] = templateId
+// 	jsonData, err := json.Marshal(content)
+// 	return jsonData, err
+// }
 
 func (api *WeiChatAPI) AccessToken(appId, secret string) (string, error) {
 	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s", appId, secret)
@@ -51,28 +56,31 @@ func (api *WeiChatAPI) AccessToken(appId, secret string) (string, error) {
 	}
 	result := make(map[string]interface{})
 	err = json.Unmarshal(body, &result)
-	//fmt.Println(result)
 	return fmt.Sprintf("%v", result["access_token"]), err
 }
 
-func (api *WeiChatAPI) SendTemplateMsg(accessToken string, json []byte) {
+func (api *WeiChatAPI) SendTemplateMsg(accessToken string, wxt *WxTemplateMsg) (WeiChatResponse, error) {
 	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=%s", accessToken)
+	json, err := wxt.Marshal()
+	if err != nil {
+		return api.responseParse(nil), err
+	}
 	body, err := Post(url, json, nil)
-	fmt.Println(string(body), err)
+	return api.responseParse(body), err
 }
 
 func (api *WeiChatAPI) SendCustomMsg(accessToken string, msg *CustomerMsg) (WeiChatResponse, error) {
 	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=%s", accessToken)
 	data, err := msg.Marshal()
 	if err != nil {
-		return msg.ResponseParse(nil), err
+		return api.responseParse(nil), err
 	}
 
 	ret, err := Post(url, data, nil)
 	if err != nil {
-		return msg.ResponseParse(nil), err
+		return api.responseParse(nil), err
 	}
-	return msg.ResponseParse(ret), err
+	return api.responseParse(ret), err
 }
 
 func (api *WeiChatAPI) MakeSignature(token, timestamp, nonce string) string {
@@ -83,17 +91,23 @@ func (api *WeiChatAPI) MakeSignature(token, timestamp, nonce string) string {
 	return fmt.Sprintf("%x", sha.Sum(nil))
 }
 
-func (api *WeiChatAPI) Code(appId, redirectUrl string) string {
+func (api *WeiChatAPI) Code(appId, redirectUrl string) error {
 
 	url := fmt.Sprintf("https://open.weixin.qq.com/connect/oauth2/authorize?appid=%s&redirect_uri=%s&response_type=code&scope=snsapi_base&state=1#wechat_redirect",
 		appId, redirectUrl)
 	_, err := Get(url, nil)
-	fmt.Println(url, err)
-	return ""
+	return err
 }
 func (api *WeiChatAPI) AuthAccessToken(appId, secret, code string) string {
 	url := fmt.Sprintf("https://api.weixin.qq.com/sns/oauth2/access_token?appid=%s&secret=%s&code=%s&grant_type=authorization_code", appId, secret, code)
 	body, _ := Get(url, nil)
-	//fmt.Println("****************",url,string(body),err)
 	return string(body)
+}
+func (api *WeiChatAPI) responseParse(resp []byte) WeiChatResponse {
+	wxRe := WeiChatResponse{}
+	if resp == nil || len(resp) < 1 {
+		return wxRe
+	}
+	json.Unmarshal(resp, &wxRe)
+	return wxRe
 }

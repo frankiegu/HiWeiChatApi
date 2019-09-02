@@ -1,132 +1,107 @@
 package HiWeiChatApi
 
 import (
-	"encoding/json"
-	"encoding/xml"
 	"fmt"
-	_ "strings"
 	"testing"
 )
 
-var appId string = ""
-var secret string = ""
+var appId string = "wxacb25453422b57a7"
+var secret string = "85a10227ade9d331f44cfc8d78904004"
 var accessToken string = ""
-var openId string = "openxxxsssaaa"
+var openId string = "omKA5uALKWNYhZk0CYN7HD43RXaw"
+var tmpId string = "a2m_d3YqUBeayXo5Tr5txsIiI68yRJHO71B2SdCv1Es"
+var weiApi *WeiChatAPI
+
+func init() {
+	weiApi = WeiChat(nil, nil)
+}
+
+// type ATest struct {
+// 	Id string
+// }
+
+// func (a *ATest) aa() {
+// 	json, _ := json.Marshal(a)
+// 	fmt.Println(string(json))
+// }
 
 func TestCustomerNewsMsg(t *testing.T) {
+	newMsg := NewCustomerNewsMsg(openId, "测试New", "测试测试", "www.baidu.com", "")
+	ret, err := weiApi.SendCustomMsg(accessToken, newMsg)
+	fmt.Println(ret, err)
 
 }
 func TestCustomerTextMsg(t *testing.T) {
-	resp := `{"errcode" : 0,"errmsg" : "ok"}`
-	by := []byte(resp)
-
-	wxRe := WeiChatResponse{}
-	json.Unmarshal(by, &wxRe)
-	fmt.Println(wxRe)
-	// textMsg := NewCustomerTextMsg(openId, "test TextMsg")
-	// data, err := textMsg.Data()
-	// fmt.Println(string(data), err)
+	textMsg := NewCustomerTextMsg(openId, "test TextMsg")
+	ret, err := weiApi.SendCustomMsg(accessToken, textMsg)
+	fmt.Println(ret, err)
 }
 func TestCustomerImageMsg(t *testing.T) {
-
+	imageMsg := NewCustomerImageMsg(openId, "mediaId")
+	ret, err := weiApi.SendCustomMsg(accessToken, imageMsg)
+	fmt.Println(ret, err)
 }
 func TestTemplateMsg(t *testing.T) {
+	keyword1 := NewWxTemplateEle()
+	keyword1.Value = "hello"
+	keyword2 := NewWxTemplateEle()
+	keyword2.Value = "world"
+	remark := NewWxTemplateEle()
+	remark.Value = "备注一下"
 
+	data := make(map[string]WxTemplateEle, 3)
+	data["keyword1"] = keyword1
+	data["keyword2"] = keyword2
+	data["remark"] = remark
+	tmpMsg := NewWxTemplateMsg(openId, tmpId, "www.baidu.com", nil, data)
+	weiApi.SendTemplateMsg(accessToken, tmpMsg)
 }
 func TestAccessToken(t *testing.T) {
-
+	token, err := weiApi.AccessToken(appId, secret)
+	fmt.Println(token, err)
 }
 func TestCode(t *testing.T) {
-
+	err := weiApi.Code(appId, "http://smart03.com")
+	fmt.Println(err)
+}
+func receiveDealFun(msg WxReceiveCommonMsg) error {
+	fmt.Println(msg)
+	return nil
+}
+func TesReceiveMsg(t *testing.T) {
+	data := `<?xml version="1.0" encoding="UTF-8"?>
+	<xml>
+	  <ToUserName>231</ToUserName>
+	  <FromUserName>4444</FromUserName>
+	  <CreateTime>1348831860</CreateTime>
+	  <MsgType>xvv</MsgType>
+	  <Content>cvc</Content>
+	  <MsgId>1234567890123456</MsgId>
+	</xml>`
+	xmlByte := []byte(data)
+	weiApi.ReceiveFunc(receiveDealFun)
+	weiApi.ReceiveCommonMsg(xmlByte)
 }
 
 func TestAuthByCode(t *testing.T) {}
 
-func TestSendMsg(t *testing.T) {
-	/*
-		  tmpId := "a2m_d3YqUBeayXo5Tr5txsIiI68yRJHO71B2SdCv1Es"
-		  openId := "omKA5uALKWNYhZk0CYN7HD43RXaw"
-		  wei := WeiChat("CPS")
-		  sendData := map[string]interface{} {
-		 	"keyword1":"hello",
-			"keyword2":"world",
-			"remark":"END",
-
-		  }
-		  accessToken,err := wei.AccessToken("wxacb25453422b57a7","85a10227ade9d331f44cfc8d78904004")
-		  json,err:= wei.GenerateWxTemplateMsgFormat(openId,tmpId,sendData)
-		  wei.SendTemplateMsg(accessToken,json)
-	*/
-}
-
-func TestWeiChat(t *testing.T) {
-	//s := strings.Split("http://wwxx/ss/aa?a=1&b=2", "?")
-	//fmt.Println(s)
-	//params := map[string]string{
-	//	"h": "2",
-	//	"z": "3",
-	//}
-	//Get("http://wwxx/ss/aa?a=1&b=2", params)
-	// content := map[string]interface{}{
-	// 	"first":  "hello",
-	// 	"remark": "world",
-	// }
-	// jsonData, _ := json.Marshal(content)
-	// data := map[string]string{
-	// 	"openId": "xxxxxxxxx",
-	// 	"cotent": string(jsonData),
-	// }
-	//
-	//wei := WeiChat("CPS1")
-	//wei.Code("wxacb25453422b57a7","http://smart03.com/login")
-	//fmt.Println(data, err)
-	//fmt.Printf("%T", jsonData)
-	//
-}
-
-// type SConfig struct {
-// 	XMLName      xml.Name   `xml:"config"`
-// 	SmtpServer   string     `xml:"smtpServer"`
-// 	SmtpPort     int        `xml:"smtpPort"`
-// 	Sender       string     `xml:"sender"`
-// 	SenderPasswd string     `xml:"senderPasswd"`
-// 	Receivers    SReceivers `xml:"receivers"`
-// }
-// type SReceivers struct {
-// 	Flag string   `xml:"flag,attr"`
-// 	User []string `xml:"user"`
-// }
-/*
-type WxReceiveCommonMsg struct {
-	ToUserName   string
-	FromUserName string
-	CreateTime   int64
-	MsgType      string
-	MsgId        int64
-	PicUrl       string
-	MediaId      string
-	Format       string
-	Recognition  string
-	ThumbMediaId string
-}
-*/
 func TestXML(t *testing.T) {
-	data := `<?xml version="1.0" encoding="UTF-8"?>
-<xml>
-  <ToUserName>231</ToUserName>
-  <FromUserName>4444</FromUserName>
-  <CreateTime>1348831860</CreateTime>
-  <MsgType>xvv</MsgType>
-  <Content>cvc</Content>
-  <MsgId>1234567890123456</MsgId>
-</xml>`
-	xmlByte := []byte(data)
+	// 	data := `<?xml version="1.0" encoding="UTF-8"?>
+	// <xml>
+	//   <ToUserName>231</ToUserName>
+	//   <FromUserName>4444</FromUserName>
+	//   <CreateTime>1348831860</CreateTime>
+	//   <MsgType>xvv</MsgType>
+	//   <Content>cvc</Content>
+	//   <MsgId>1234567890123456</MsgId>
+	// </xml>`
+	// 	xmlByte := []byte(data)
 
-	v := WxReceiveCommonMsg{}
-	err := xml.Unmarshal(xmlByte, &v)
+	// v := WxReceiveCommonMsg{}
 	// err := xml.Unmarshal(xmlByte, &v)
-	fmt.Println(err)
-	fmt.Println(v.MsgId)
+	// err := xml.Unmarshal(xmlByte, &v)
+	// fmt.Println(err)
+	// fmt.Println(v.MsgId)
 	// fmt.Println("SmtpServer : ", v.SmtpServer)
 	// fmt.Println("SmtpPort : ", v.SmtpPort)
 	// fmt.Println("Sender : ", v.Sender)

@@ -31,14 +31,14 @@ func (c *CustomerMsg) Marshal() ([]byte, error) {
 	return data, err
 }
 
-func (c *CustomerMsg) ResponseParse(resp []byte) WeiChatResponse {
-	wxRe := WeiChatResponse{}
-	if resp == nil || len(resp) < 1 {
-		return wxRe
-	}
-	json.Unmarshal(resp, &wxRe)
-	return wxRe
-}
+// func (c *CustomerMsg) ResponseParse(resp []byte) WeiChatResponse {
+// 	wxRe := WeiChatResponse{}
+// 	if resp == nil || len(resp) < 1 {
+// 		return wxRe
+// 	}
+// 	json.Unmarshal(resp, &wxRe)
+// 	return wxRe
+// }
 
 type customerNewsMsg struct {
 	ToUser             string `json:"touser"`
@@ -55,27 +55,35 @@ type customeNewArticleEle struct {
 	PicUrl      string `json:'picurl'`
 }
 
-func NewCustomerNewsMsg(toUser string, article customerNewArticle) *CustomerMsg {
+func NewCustomerNewsMsg(toUser string, title string, desc string, url string, picUrl string) *CustomerMsg {
 
-	msg := customerNewsMsg{
-		ToUser:             toUser,
-		MsgType:            "news",
-		customerNewArticle: article,
-	}
-	return &CustomerMsg{
-		Msg: msg,
-	}
-}
-
-func NewCustomeNewArticleEle(title string, desc string, url string, picUrl string) customerNewArticle {
 	ele := customeNewArticleEle{
 		Title:       title,
 		Description: desc,
 		Url:         url,
 		PicUrl:      picUrl,
 	}
-	return customerNewArticle{Articles: ele}
+	article := customerNewArticle{Articles: ele}
+	msg := customerNewsMsg{
+		ToUser:             toUser,
+		MsgType:            "news",
+		customerNewArticle: article,
+	}
+
+	return &CustomerMsg{
+		Msg: msg,
+	}
 }
+
+// func NewCustomeNewArticleEle(title string, desc string, url string, picUrl string) customerNewArticle {
+// 	ele := customeNewArticleEle{
+// 		Title:       title,
+// 		Description: desc,
+// 		Url:         url,
+// 		PicUrl:      picUrl,
+// 	}
+// 	return customerNewArticle{Articles: ele}
+// }
 
 type customerTextMsg struct {
 	ToUser              string `json:"touser"`
@@ -137,26 +145,39 @@ type WxReceiveCommonMsg struct {
 type WxReceiveFunc func(msg WxReceiveCommonMsg) error
 
 type WxTemplateMsg struct {
-	ToUser       string `json:"touser"`
-	TemplateId   string `json:"template_id"`
-	Url          string `json:"url"`
-	MiniPrograme `json:"miniprogram"`
-	Data         map[string]WxTemplateEle `json:"data"`
+	ToUser        string `json:"touser"`
+	TemplateId    string `json:"template_id"`
+	Url           string `json:"url"`
+	*MiniPrograme `json:"miniprogram"`
+	Data          map[string]WxTemplateEle `json:"data"`
 }
 type MiniPrograme struct {
 	AppId    string `json:"appid"`
 	PagePath string `json:"pagepath"`
 }
+
+func NewMiniProgram(appId, pagePath string) *MiniPrograme {
+	return &MiniPrograme{
+		AppId:    appId,
+		PagePath: pagePath,
+	}
+}
+
 type WxTemplateEle struct {
 	Value string `json:"value"`
 	Color string `json:"color"`
 }
 
+func NewWxTemplateEle() WxTemplateEle {
+	return WxTemplateEle{
+		Color: "#000000",
+	}
+}
 func (wxt *WxTemplateMsg) Marshal() ([]byte, error) {
 	data, err := json.Marshal(wxt)
 	return data, err
 }
-func NewWxTemplateMsg(toUser, tmpId, url string, mini MiniPrograme, data map[string]WxTemplateEle) *WxTemplateMsg {
+func NewWxTemplateMsg(toUser, tmpId, url string, mini *MiniPrograme, data map[string]WxTemplateEle) *WxTemplateMsg {
 	return &WxTemplateMsg{
 		ToUser:       toUser,
 		TemplateId:   tmpId,
@@ -169,7 +190,6 @@ func NewWxTemplateMsg(toUser, tmpId, url string, mini MiniPrograme, data map[str
 
 func Post(url string, paramBody []byte, header map[string]string) ([]byte, error) {
 	client := &http.Client{}
-	//	fmt.Println("******", url, paramBody)
 	paramsData := bytes.NewBuffer(paramBody)
 	req, err := http.NewRequest("POST", url, paramsData)
 	if err != nil {
@@ -203,7 +223,6 @@ func Get(url string, params map[string]string) ([]byte, error) {
 			}
 		}
 	}
-
 	urls := strings.Split(url, "?")
 	targetUrl := url
 	if len(urls) > 1 && paramsStr != "" {
