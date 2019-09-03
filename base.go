@@ -46,7 +46,7 @@ type customerNewsMsg struct {
 	customerNewArticle `json:"news"`
 }
 type customerNewArticle struct {
-	Articles customeNewArticleEle `json:"articles"`
+	Articles []customeNewArticleEle `json:"articles"`
 }
 type customeNewArticleEle struct {
 	Title       string `json:"title"`
@@ -63,7 +63,9 @@ func NewCustomerNewsMsg(toUser string, title string, desc string, url string, pi
 		Url:         url,
 		PicUrl:      picUrl,
 	}
-	article := customerNewArticle{Articles: ele}
+	eles := make([]customeNewArticleEle, 1)
+	eles[0] = ele
+	article := customerNewArticle{Articles: eles}
 	msg := customerNewsMsg{
 		ToUser:             toUser,
 		MsgType:            "news",
