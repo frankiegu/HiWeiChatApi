@@ -125,7 +125,7 @@ func NewCustomerImageMsg(toUser string, mediaId string) *CustomerMsg {
 	Media := customerImageContent{MediaId: mediaId}
 	msg := customerImageMsg{
 		ToUser:               toUser,
-		MsgType:              "text",
+		MsgType:              "image",
 		customerImageContent: Media,
 	}
 	return &CustomerMsg{
