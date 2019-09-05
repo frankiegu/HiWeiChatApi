@@ -111,3 +111,31 @@ func (api *WeiChatAPI) responseParse(resp []byte) WeiChatResponse {
 	json.Unmarshal(resp, &wxRe)
 	return wxRe
 }
+
+type MediaReponse struct {
+	Type     string `json:"type"`
+	MediaId  string `json:"media_id"`
+	CreateAt int    `json:"create_at"`
+	WeiChatResponse
+}
+
+//{"type":"TYPE","media_id":"MEDIA_ID","created_at":123456789}
+func (api *WeiChatAPI) UploadTemporaryMedia(accessToken string, file, mediaType MediaType) (MediaReponse, error) {
+	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/media/upload?access_token=%s&type=%s", accessToken, mediaType)
+	fmt.Println(url)
+	meRe = MediaReponse{}
+	body, err := PostFile(url, nil, "media", file)
+	if err != nil {
+		return meRe, err
+	}
+	fmt.Println(string(body), err)
+	json.Unmarshal(body, &meRe)
+	return meRe, nil
+}
+func (api *WeiChatAPI) uploadPermanentMedia() {
+	// 	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/media/upload?access_token=%s&type=%s", accessToken, mediaType)
+	// 	body, err := PostFile(url, nil, "media", file)
+	// 	meRe = MediaReponse{}
+	// 	json.Unmarshal(resp, &meRe)
+	// 	return meRe
+}

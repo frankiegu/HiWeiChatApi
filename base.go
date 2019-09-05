@@ -5,8 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -190,6 +194,15 @@ func NewWxTemplateMsg(toUser, tmpId, url string, mini *MiniPrograme, data map[st
 
 }
 
+type MediaType string
+
+const (
+	ImageMedia MediaType = MediaType("image")
+	VoiceMedia MediaType = MediaType("voice")
+	VideoMedia MediaType = MediaType("video")
+	ThumbMedia MediaType = MediaType("thumb")
+)
+
 func Post(url string, paramBody []byte, header map[string]string) ([]byte, error) {
 	client := &http.Client{}
 	paramsData := bytes.NewBuffer(paramBody)
@@ -212,6 +225,41 @@ func Post(url string, paramBody []byte, header map[string]string) ([]byte, error
 		return nil, err
 	}
 	return body, nil
+}
+
+func PostFile(url string, params map[string]string, fileFieldName, path string) ([]byte, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile(fileFieldName, filepath.Base(path))
+	if err != nil {
+		return nil, err
+	}
+	_, err = io.Copy(part, file)
+
+	for key, val := range params {
+		_ = writer.WriteField(key, val)
+	}
+	err = writer.Close()
+	if err != nil {
+		return nil, err
+	}
+	request, err := http.NewRequest("POST", url, body)
+	request.Header.Add("Content-Type", writer.FormDataContentType())
+
+	client := &http.Client{}
+	resp, err := client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	respBody, err := ioutil.ReadAll(resp.Body)
+	return respBody, err
 }
 
 func Get(url string, params map[string]string) ([]byte, error) {

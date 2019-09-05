@@ -54,7 +54,8 @@ func TestTemplateMsg(t *testing.T) {
 	data["keyword2"] = keyword2
 	data["remark"] = remark
 	tmpMsg := NewWxTemplateMsg(openId, tmpId, "www.baidu.com", nil, data)
-	weiApi.SendTemplateMsg(accessToken, tmpMsg)
+	ret, err := weiApi.SendTemplateMsg(accessToken, tmpMsg)
+	fmt.Println(ret, err)
 }
 func TestAccessToken(t *testing.T) {
 	token, err := weiApi.AccessToken(appId, secret)
@@ -110,4 +111,19 @@ func TestXML(t *testing.T) {
 	// for i, element := range v.Receivers.User {
 	// 	fmt.Println(i, element)
 	// }
+}
+
+// func TestPostFile(t *testing.T) {
+// 	data := map[string]string{
+// 		"age": "15",
+// 	}
+// 	_, err := PostFile("http://smart03.com/test", data, "testFile", "E:/2.png")
+// 	fmt.Println(err)
+// }
+
+func TestUploadTemporaryMedia(t *testing.T) {
+	token, err := weiApi.AccessToken(appId, secret)
+	fmt.Println(token, err)
+	resp, err := weiApi.uploadTemporaryMedia(token, "/tmp/2.png", ImageMedia)
+	fmt.Println(resp, err)
 }
