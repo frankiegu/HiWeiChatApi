@@ -132,10 +132,14 @@ func (api *WeiChatAPI) UploadTemporaryMedia(accessToken string, file string, med
 	json.Unmarshal(body, &meRe)
 	return meRe, nil
 }
-func (api *WeiChatAPI) uploadPermanentMedia() {
-	// 	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/media/upload?access_token=%s&type=%s", accessToken, mediaType)
-	// 	body, err := PostFile(url, nil, "media", file)
-	// 	meRe = MediaReponse{}
-	// 	json.Unmarshal(resp, &meRe)
-	// 	return meRe
+func (api *WeiChatAPI) UploadPermanentMedia(accessToken string, file string, mediaType MediaType) (MediaReponse, error) {
+	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/material/add_material?access_token=%s&type=%s", accessToken, mediaType)
+	fmt.Println(url)
+	meRe := MediaReponse{}
+	if err != nil {
+		return meRe, err
+	}
+	fmt.Println(string(body), err)
+	json.Unmarshal(body, &meRe)
+	return meRe, nil
 }
