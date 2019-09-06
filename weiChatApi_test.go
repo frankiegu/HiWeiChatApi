@@ -37,8 +37,9 @@ func TestCustomerTextMsg(t *testing.T) {
 	fmt.Println(ret, err)
 }
 func TestCustomerImageMsg(t *testing.T) {
-	imageMsg := NewCustomerImageMsg(openId, "mediaId")
-	ret, err := weiApi.SendCustomMsg(accessToken, imageMsg)
+	token, err := weiApi.AccessToken(appId, secret)
+	imageMsg := NewCustomerImageMsg(openId, "5deENy942-cX15WuZsQJQSskcbpIDiOpFkriV2_a89I3Kwod9uWPtJ0_2XLVK4jZ")
+	ret, err := weiApi.SendCustomMsg(token, imageMsg)
 	fmt.Println(ret, err)
 }
 func TestTemplateMsg(t *testing.T) {
@@ -124,6 +125,6 @@ func TestXML(t *testing.T) {
 func TestUploadTemporaryMedia(t *testing.T) {
 	token, err := weiApi.AccessToken(appId, secret)
 	fmt.Println(token, err)
-	resp, err := weiApi.uploadTemporaryMedia(token, "/tmp/2.png", ImageMedia)
+	resp, err := weiApi.UploadTemporaryMedia(token, "/tmp/2.png", ImageMedia)
 	fmt.Println(resp, err)
 }

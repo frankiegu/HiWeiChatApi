@@ -120,10 +120,10 @@ type MediaReponse struct {
 }
 
 //{"type":"TYPE","media_id":"MEDIA_ID","created_at":123456789}
-func (api *WeiChatAPI) UploadTemporaryMedia(accessToken string, file, mediaType MediaType) (MediaReponse, error) {
+func (api *WeiChatAPI) UploadTemporaryMedia(accessToken string, file string, mediaType MediaType) (MediaReponse, error) {
 	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/media/upload?access_token=%s&type=%s", accessToken, mediaType)
 	fmt.Println(url)
-	meRe = MediaReponse{}
+	meRe := MediaReponse{}
 	body, err := PostFile(url, nil, "media", file)
 	if err != nil {
 		return meRe, err
