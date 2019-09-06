@@ -136,6 +136,7 @@ func (api *WeiChatAPI) UploadPermanentMedia(accessToken string, file string, med
 	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/material/add_material?access_token=%s&type=%s", accessToken, mediaType)
 	fmt.Println(url)
 	meRe := MediaReponse{}
+	body, err := PostFile(url, nil, "media", file)
 	if err != nil {
 		return meRe, err
 	}

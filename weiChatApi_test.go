@@ -132,6 +132,6 @@ func TestUploadTemporaryMedia(t *testing.T) {
 func TestUploadPermanentMedia(t *testing.T) {
 	token, err := weiApi.AccessToken(appId, secret)
 	fmt.Println(token, err)
-	resp, err := weiApi.UploadTemporaryMedia(token, "/tmp/2.png", ImageMedia)
+	resp, err := weiApi.UploadPermanentMedia(token, "/tmp/2.png", ImageMedia)
 	fmt.Println(resp, err)
 }
