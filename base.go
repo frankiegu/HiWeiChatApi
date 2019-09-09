@@ -194,6 +194,7 @@ func NewWxTemplateMsg(toUser, tmpId, url string, mini *MiniPrograme, data map[st
 
 }
 
+//素材类型
 type MediaType string
 
 const (
@@ -202,6 +203,27 @@ const (
 	VideoMedia MediaType = MediaType("video")
 	ThumbMedia MediaType = MediaType("thumb")
 )
+
+type QRCodeType string
+
+const (
+	QR_SCENE           QRCodeType = QRCodeType("QR_SCENE")           //短期 整型参数
+	QR_STR_SCENE       QRCodeType = QRCodeType("QR_STR_SCENE")       //短期 字符串参数
+	QR_LIMIT_SCENE     QRCodeType = QRCodeType("QR_LIMIT_SCENE")     //长期 整型参数
+	QR_LIMIT_STR_SCENE QRCodeType = QRCodeType("QR_LIMIT_STR_SCENE") //长期 字符串参数
+)
+
+type QRCodeResponse struct {
+	Ticket        string `json:"ticket"`
+	ExpireSeconds int64  `json:"expire_seconds"`
+	Url           string `json:"url"`
+	WeiChatResponse
+}
+
+type ShortUrlResponse struct {
+	WeiChatResponse
+	ShortUrl string `json:"short_url"`
+}
 
 func Post(url string, paramBody []byte, header map[string]string) ([]byte, error) {
 	client := &http.Client{}

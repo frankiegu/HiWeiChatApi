@@ -12,8 +12,9 @@ import (
 )
 
 type WeiChatAPI struct {
-	log         *log.Logger
-	receiveFunc WxReceiveFunc
+	log          *log.Logger
+	receiveFunc  WxReceiveFunc
+	qrExpireTime int
 }
 
 func WeiChat(logger *log.Logger, revFunc WxReceiveFunc) *WeiChatAPI {
@@ -21,8 +22,9 @@ func WeiChat(logger *log.Logger, revFunc WxReceiveFunc) *WeiChatAPI {
 		// logger = log.New(l.dest, , log.Ldate|log.Ltime|log.Lshortfile)
 	}
 	return &WeiChatAPI{
-		log:         logger,
-		receiveFunc: revFunc,
+		log:          logger,
+		receiveFunc:  revFunc,
+		qrExpireTime: 2592000,
 	}
 }
 
@@ -140,7 +142,69 @@ func (api *WeiChatAPI) UploadPermanentMedia(accessToken string, file string, med
 	if err != nil {
 		return meRe, err
 	}
-	fmt.Println(string(body), err)
 	json.Unmarshal(body, &meRe)
 	return meRe, nil
+}
+
+func (api *WeiChatAPI) GenerateQRCode(accessToken string, scene interface{}, qrType QRCodeType) (QRCodeResponse, error) {
+	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token?access_token=%s", accessToken)
+	qrStr := fmt.Sprintf("%s", qrType)
+	postData := make(map[string]interface{}, 3)
+	postData["action_name"] = qrStr
+	postData["expire_seconds"] = api.qRCodeExpireTime()
+
+	keyMap := map[QRCodeType]string{
+		QR_SCENE:           "scene_id",
+		QR_STR_SCENE:       "scene_str",
+		QR_LIMIT_SCENE:     "scene_id",
+		QR_LIMIT_STR_SCENE: "scene_str",
+	}
+	qrResp := QRCodeResponse{}
+	key := keyMap[qrType]
+	if qrStr == "QR_SCENE" || qrStr == "QR_STR_SCENE" {
+		postData["action_info"] = map[string]map[string]interface{}{
+			"scene": map[string]interface{}{key: scene},
+		}
+	} else if qrStr == "QR_LIMIT_SCENE" || qrStr == "QR_LIMIT_STR_SCENE" {
+		postData["action_info"] = map[string]map[string]interface{}{
+			"scene": map[string]interface{}{key: scene},
+		}
+	} else {
+		return qrResp, fmt.Errorf("undefined qrType:%s", qrStr)
+	}
+	postDataByte, err := json.Marshal(postData)
+	if err != nil {
+		return qrResp, err
+	}
+
+	body, err := Post(url, postDataByte, nil)
+	if err != nil {
+		return qrResp, err
+	}
+	fmt.Println(string(body), err)
+	json.Unmarshal(body, &qrResp)
+	return qrResp, nil
+}
+func (api *WeiChatAPI) SetQRCodeExpireTime(tm int) {
+	api.qrExpireTime = tm
+}
+func (api *WeiChatAPI) qRCodeExpireTime() int {
+	return api.qrExpireTime
+}
+
+func (api *WeiChatAPI) LongTransformShortUrl(accessToken, longUrl string) (ShortUrlResponse, error) {
+	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/shorturl?access_token?access_token=%s", accessToken)
+	postData := make(map[string]string, 2)
+	postData["action"] = "long2short"
+	postData["long_url"] = longUrl
+	postDataByte, err := json.Marshal(postData)
+	shortResp := ShortUrlResponse{}
+	if err != nil {
+		return shortResp, err
+	}
+	fmt.Println(string(postDataByte), err)
+	body, err := Post(url, postDataByte, nil)
+	fmt.Println(string(body), err)
+	json.Unmarshal(body, &shortResp)
+	return shortResp, nil
 }

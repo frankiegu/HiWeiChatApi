@@ -135,3 +135,14 @@ func TestUploadPermanentMedia(t *testing.T) {
 	resp, err := weiApi.UploadPermanentMedia(token, "/tmp/2.png", ImageMedia)
 	fmt.Println(resp, err)
 }
+
+func TestGenerateQRCode(t *testing.T) {
+	token, err := weiApi.AccessToken(appId, secret)
+	resp, err := weiApi.GenerateQRCode(token, 1223, QR_LIMIT_STR_SCENE)
+	fmt.Println(resp, err)
+}
+func TestShortUrl(t *testing.T) {
+	token, err := weiApi.AccessToken(appId, secret)
+	resp, err := weiApi.LongTransformShortUrl(token, "http://wwwxx")
+	fmt.Println(resp, err)
+}
