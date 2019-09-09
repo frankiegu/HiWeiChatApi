@@ -143,6 +143,7 @@ func TestGenerateQRCode(t *testing.T) {
 }
 func TestShortUrl(t *testing.T) {
 	token, err := weiApi.AccessToken(appId, secret)
+	fmt.Println(token,err)
 	resp, err := weiApi.LongTransformShortUrl(token, "http://wwwxx")
 	fmt.Println(resp, err)
 }
