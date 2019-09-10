@@ -147,7 +147,7 @@ func (api *WeiChatAPI) UploadPermanentMedia(accessToken string, file string, med
 }
 
 func (api *WeiChatAPI) GenerateQRCode(accessToken string, scene interface{}, qrType QRCodeType) (QRCodeResponse, error) {
-	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token?access_token=%s", accessToken)
+	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=%s", accessToken)
 	qrStr := fmt.Sprintf("%s", qrType)
 	postData := make(map[string]interface{}, 3)
 	postData["action_name"] = qrStr
@@ -193,7 +193,7 @@ func (api *WeiChatAPI) qRCodeExpireTime() int {
 }
 
 func (api *WeiChatAPI) LongTransformShortUrl(accessToken, longUrl string) (ShortUrlResponse, error) {
-	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/shorturl?access_token?access_token=%s", accessToken)
+	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/shorturl?access_token=%s", accessToken)
 	postData := make(map[string]string, 2)
 	postData["action"] = "long2short"
 	postData["long_url"] = longUrl
