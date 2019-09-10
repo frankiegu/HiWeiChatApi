@@ -14,16 +14,8 @@ var weiApi *WeiChatAPI
 
 func init() {
 	weiApi = WeiChat(nil, nil)
+	accessToken, err := weiApi.AccessToken(appId, secret)
 }
-
-// type ATest struct {
-// 	Id string
-// }
-
-// func (a *ATest) aa() {
-// 	json, _ := json.Marshal(a)
-// 	fmt.Println(string(json))
-// }
 
 func TestCustomerNewsMsg(t *testing.T) {
 	newMsg := NewCustomerNewsMsg(openId, "测试New", "测试测试", "www.baidu.com", "")
@@ -58,10 +50,11 @@ func TestTemplateMsg(t *testing.T) {
 	ret, err := weiApi.SendTemplateMsg(accessToken, tmpMsg)
 	fmt.Println(ret, err)
 }
-func TestAccessToken(t *testing.T) {
-	token, err := weiApi.AccessToken(appId, secret)
-	fmt.Println(token, err)
-}
+
+// func TestAccessToken(t *testing.T) {
+// 	token, err := weiApi.AccessToken(appId, secret)
+// 	fmt.Println(token, err)
+// }
 func TestCode(t *testing.T) {
 	err := weiApi.Code(appId, "http://smart03.com")
 	fmt.Println(err)
@@ -70,79 +63,25 @@ func receiveDealFun(msg WxReceiveCommonMsg) error {
 	fmt.Println(msg)
 	return nil
 }
-func TesReceiveMsg(t *testing.T) {
-	data := `<?xml version="1.0" encoding="UTF-8"?>
-	<xml>
-	  <ToUserName>231</ToUserName>
-	  <FromUserName>4444</FromUserName>
-	  <CreateTime>1348831860</CreateTime>
-	  <MsgType>xvv</MsgType>
-	  <Content>cvc</Content>
-	  <MsgId>1234567890123456</MsgId>
-	</xml>`
-	xmlByte := []byte(data)
-	weiApi.ReceiveFunc(receiveDealFun)
-	weiApi.ReceiveCommonMsg(xmlByte)
-}
 
 func TestAuthByCode(t *testing.T) {}
 
-func TestXML(t *testing.T) {
-	// 	data := `<?xml version="1.0" encoding="UTF-8"?>
-	// <xml>
-	//   <ToUserName>231</ToUserName>
-	//   <FromUserName>4444</FromUserName>
-	//   <CreateTime>1348831860</CreateTime>
-	//   <MsgType>xvv</MsgType>
-	//   <Content>cvc</Content>
-	//   <MsgId>1234567890123456</MsgId>
-	// </xml>`
-	// 	xmlByte := []byte(data)
-
-	// v := WxReceiveCommonMsg{}
-	// err := xml.Unmarshal(xmlByte, &v)
-	// err := xml.Unmarshal(xmlByte, &v)
-	// fmt.Println(err)
-	// fmt.Println(v.MsgId)
-	// fmt.Println("SmtpServer : ", v.SmtpServer)
-	// fmt.Println("SmtpPort : ", v.SmtpPort)
-	// fmt.Println("Sender : ", v.Sender)
-	// fmt.Println("SenderPasswd : ", v.SenderPasswd)
-	// fmt.Println("Receivers.Flag : ", v.Receivers.Flag)
-	// for i, element := range v.Receivers.User {
-	// 	fmt.Println(i, element)
-	// }
-}
-
-// func TestPostFile(t *testing.T) {
-// 	data := map[string]string{
-// 		"age": "15",
-// 	}
-// 	_, err := PostFile("http://smart03.com/test", data, "testFile", "E:/2.png")
-// 	fmt.Println(err)
-// }
-
 func TestUploadTemporaryMedia(t *testing.T) {
-	token, err := weiApi.AccessToken(appId, secret)
-	fmt.Println(token, err)
-	resp, err := weiApi.UploadTemporaryMedia(token, "/tmp/2.png", ImageMedia)
+	resp, err := weiApi.UploadTemporaryMedia(accessToken, "/tmp/2.png", ImageMedia)
 	fmt.Println(resp, err)
 }
 
 func TestUploadPermanentMedia(t *testing.T) {
-	token, err := weiApi.AccessToken(appId, secret)
-	fmt.Println(token, err)
-	resp, err := weiApi.UploadPermanentMedia(token, "/tmp/2.png", ImageMedia)
+
+	resp, err := weiApi.UploadPermanentMedia(accessToken, "/tmp/2.png", ImageMedia)
 	fmt.Println(resp, err)
 }
 
 func TestGenerateQRCode(t *testing.T) {
-	token, err := weiApi.AccessToken(appId, secret)
-	resp, err := weiApi.GenerateQRCode(token, 1223, QR_LIMIT_STR_SCENE)
+	resp, err := weiApi.GenerateQRCode(accessToken, 1223, QR_LIMIT_STR_SCENE)
 	fmt.Println(resp, err)
 }
 func TestShortUrl(t *testing.T) {
-	token, err := weiApi.AccessToken(appId, secret)
-	resp, err := weiApi.LongTransformShortUrl(token, "http://wwwxx")
+	resp, err := weiApi.LongTransformShortUrl(accessToken, "http://wwwxx")
 	fmt.Println(resp, err)
 }

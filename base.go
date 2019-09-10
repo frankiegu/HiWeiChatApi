@@ -2,8 +2,8 @@ package HiWeiChatApi
 
 import (
 	"bytes"
-	"encoding/json"
-	"errors"
+	// "encoding/json"
+	// "errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -14,216 +14,204 @@ import (
 	"strings"
 )
 
-type WeiChatConfig struct {
-}
-
-type WeiChatResponse struct {
-	ErrNo  int    `json:"errno"`
-	ErrMsg string `json:"errmsg"`
-	MsgId  int64  `json:"msgid"`
-}
-
-type CustomerMsg struct {
-	Msg interface{}
-}
-
-func (c *CustomerMsg) Marshal() ([]byte, error) {
-	if c.Msg == nil {
-		return nil, errors.New("msg is empty")
-	}
-	data, err := json.Marshal(c.Msg)
-	return data, err
-}
-
-// func (c *CustomerMsg) ResponseParse(resp []byte) WeiChatResponse {
-// 	wxRe := WeiChatResponse{}
-// 	if resp == nil || len(resp) < 1 {
-// 		return wxRe
-// 	}
-// 	json.Unmarshal(resp, &wxRe)
-// 	return wxRe
+// type WeiChatResponse struct {
+// 	ErrNo  int    `json:"errno"`
+// 	ErrMsg string `json:"errmsg"`
+// 	MsgId  int64  `json:"msgid"`
 // }
 
-type customerNewsMsg struct {
-	ToUser             string `json:"touser"`
-	MsgType            string `json:"msgtype"`
-	customerNewArticle `json:"news"`
-}
-type customerNewArticle struct {
-	Articles []customeNewArticleEle `json:"articles"`
-}
-type customeNewArticleEle struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Url         string `json:"url"`
-	PicUrl      string `json:'picurl'`
-}
+// type CustomerMsg struct {
+// 	Msg interface{}
+// }
 
-func NewCustomerNewsMsg(toUser string, title string, desc string, url string, picUrl string) *CustomerMsg {
+// func (c *CustomerMsg) Marshal() ([]byte, error) {
+// 	if c.Msg == nil {
+// 		return nil, errors.New("msg is empty")
+// 	}
+// 	data, err := json.Marshal(c.Msg)
+// 	return data, err
+// }
 
-	ele := customeNewArticleEle{
-		Title:       title,
-		Description: desc,
-		Url:         url,
-		PicUrl:      picUrl,
-	}
-	eles := make([]customeNewArticleEle, 1)
-	eles[0] = ele
-	article := customerNewArticle{Articles: eles}
-	msg := customerNewsMsg{
-		ToUser:             toUser,
-		MsgType:            "news",
-		customerNewArticle: article,
-	}
+// type customerNewsMsg struct {
+// 	ToUser             string `json:"touser"`
+// 	MsgType            string `json:"msgtype"`
+// 	customerNewArticle `json:"news"`
+// }
+// type customerNewArticle struct {
+// 	Articles []customeNewArticleEle `json:"articles"`
+// }
+// type customeNewArticleEle struct {
+// 	Title       string `json:"title"`
+// 	Description string `json:"description"`
+// 	Url         string `json:"url"`
+// 	PicUrl      string `json:'picurl'`
+// }
 
-	return &CustomerMsg{
-		Msg: msg,
-	}
-}
+// func NewCustomerNewsMsg(toUser string, title string, desc string, url string, picUrl string) *CustomerMsg {
 
-// func NewCustomeNewArticleEle(title string, desc string, url string, picUrl string) customerNewArticle {
 // 	ele := customeNewArticleEle{
 // 		Title:       title,
 // 		Description: desc,
 // 		Url:         url,
 // 		PicUrl:      picUrl,
 // 	}
-// 	return customerNewArticle{Articles: ele}
+// 	eles := make([]customeNewArticleEle, 1)
+// 	eles[0] = ele
+// 	article := customerNewArticle{Articles: eles}
+// 	msg := customerNewsMsg{
+// 		ToUser:             toUser,
+// 		MsgType:            "news",
+// 		customerNewArticle: article,
+// 	}
+
+// 	return &CustomerMsg{
+// 		Msg: msg,
+// 	}
 // }
 
-type customerTextMsg struct {
-	ToUser              string `json:"touser"`
-	MsgType             string `json:"msgtype"`
-	customerTextContent `json:"text"`
-}
-type customerTextContent struct {
-	Content string `json:"content"`
-}
+// // func NewCustomeNewArticleEle(title string, desc string, url string, picUrl string) customerNewArticle {
+// // 	ele := customeNewArticleEle{
+// // 		Title:       title,
+// // 		Description: desc,
+// // 		Url:         url,
+// // 		PicUrl:      picUrl,
+// // 	}
+// // 	return customerNewArticle{Articles: ele}
+// // }
 
-func NewCustomerTextMsg(toUser string, content string) *CustomerMsg {
-	text := customerTextContent{Content: content}
-	msg := customerTextMsg{
-		ToUser:              toUser,
-		MsgType:             "text",
-		customerTextContent: text,
-	}
-	return &CustomerMsg{
-		Msg: msg,
-	}
-}
+// type customerTextMsg struct {
+// 	ToUser              string `json:"touser"`
+// 	MsgType             string `json:"msgtype"`
+// 	customerTextContent `json:"text"`
+// }
+// type customerTextContent struct {
+// 	Content string `json:"content"`
+// }
 
-type customerImageMsg struct {
-	ToUser               string `json:"touser"`
-	MsgType              string `json:"msgtype"`
-	customerImageContent `json:"image"`
-}
-type customerImageContent struct {
-	MediaId string `json:"media_id"`
-}
+// func NewCustomerTextMsg(toUser string, content string) *CustomerMsg {
+// 	text := customerTextContent{Content: content}
+// 	msg := customerTextMsg{
+// 		ToUser:              toUser,
+// 		MsgType:             "text",
+// 		customerTextContent: text,
+// 	}
+// 	return &CustomerMsg{
+// 		Msg: msg,
+// 	}
+// }
 
-func NewCustomerImageMsg(toUser string, mediaId string) *CustomerMsg {
-	Media := customerImageContent{MediaId: mediaId}
-	msg := customerImageMsg{
-		ToUser:               toUser,
-		MsgType:              "image",
-		customerImageContent: Media,
-	}
-	return &CustomerMsg{
-		Msg: msg,
-	}
-}
+// type customerImageMsg struct {
+// 	ToUser               string `json:"touser"`
+// 	MsgType              string `json:"msgtype"`
+// 	customerImageContent `json:"image"`
+// }
+// type customerImageContent struct {
+// 	MediaId string `json:"media_id"`
+// }
 
-//接收普通消息
-type WxReceiveCommonMsg struct {
-	ToUserName   string
-	FromUserName string
-	Content      string
-	CreateTime   int64
-	MsgType      string
-	MsgId        int64
-	PicUrl       string
-	MediaId      string
-	Format       string
-	Recognition  string
-	ThumbMediaId string
-}
+// func NewCustomerImageMsg(toUser string, mediaId string) *CustomerMsg {
+// 	Media := customerImageContent{MediaId: mediaId}
+// 	msg := customerImageMsg{
+// 		ToUser:               toUser,
+// 		MsgType:              "image",
+// 		customerImageContent: Media,
+// 	}
+// 	return &CustomerMsg{
+// 		Msg: msg,
+// 	}
+// }
 
-type WxReceiveFunc func(msg WxReceiveCommonMsg) error
+// //接收普通消息
+// type WxReceiveCommonMsg struct {
+// 	ToUserName   string
+// 	FromUserName string
+// 	Content      string
+// 	CreateTime   int64
+// 	MsgType      string
+// 	MsgId        int64
+// 	PicUrl       string
+// 	MediaId      string
+// 	Format       string
+// 	Recognition  string
+// 	ThumbMediaId string
+// }
 
-type WxTemplateMsg struct {
-	ToUser        string `json:"touser"`
-	TemplateId    string `json:"template_id"`
-	Url           string `json:"url"`
-	*MiniPrograme `json:"miniprogram"`
-	Data          map[string]WxTemplateEle `json:"data"`
-}
-type MiniPrograme struct {
-	AppId    string `json:"appid"`
-	PagePath string `json:"pagepath"`
-}
+// type WxReceiveFunc func(msg WxReceiveCommonMsg) error
 
-func NewMiniProgram(appId, pagePath string) *MiniPrograme {
-	return &MiniPrograme{
-		AppId:    appId,
-		PagePath: pagePath,
-	}
-}
+// type WxTemplateMsg struct {
+// 	ToUser        string `json:"touser"`
+// 	TemplateId    string `json:"template_id"`
+// 	Url           string `json:"url"`
+// 	*MiniPrograme `json:"miniprogram"`
+// 	Data          map[string]WxTemplateEle `json:"data"`
+// }
+// type MiniPrograme struct {
+// 	AppId    string `json:"appid"`
+// 	PagePath string `json:"pagepath"`
+// }
 
-type WxTemplateEle struct {
-	Value string `json:"value"`
-	Color string `json:"color"`
-}
+// func NewMiniProgram(appId, pagePath string) *MiniPrograme {
+// 	return &MiniPrograme{
+// 		AppId:    appId,
+// 		PagePath: pagePath,
+// 	}
+// }
 
-func NewWxTemplateEle() WxTemplateEle {
-	return WxTemplateEle{
-		Color: "#000000",
-	}
-}
-func (wxt *WxTemplateMsg) Marshal() ([]byte, error) {
-	data, err := json.Marshal(wxt)
-	return data, err
-}
-func NewWxTemplateMsg(toUser, tmpId, url string, mini *MiniPrograme, data map[string]WxTemplateEle) *WxTemplateMsg {
-	return &WxTemplateMsg{
-		ToUser:       toUser,
-		TemplateId:   tmpId,
-		Url:          url,
-		MiniPrograme: mini,
-		Data:         data,
-	}
+// type WxTemplateEle struct {
+// 	Value string `json:"value"`
+// 	Color string `json:"color"`
+// }
 
-}
+// func NewWxTemplateEle() WxTemplateEle {
+// 	return WxTemplateEle{
+// 		Color: "#000000",
+// 	}
+// }
+// func (wxt *WxTemplateMsg) Marshal() ([]byte, error) {
+// 	data, err := json.Marshal(wxt)
+// 	return data, err
+// }
+// func NewWxTemplateMsg(toUser, tmpId, url string, mini *MiniPrograme, data map[string]WxTemplateEle) *WxTemplateMsg {
+// 	return &WxTemplateMsg{
+// 		ToUser:       toUser,
+// 		TemplateId:   tmpId,
+// 		Url:          url,
+// 		MiniPrograme: mini,
+// 		Data:         data,
+// 	}
+
+// }
 
 //素材类型
-type MediaType string
+// type MediaType string
 
-const (
-	ImageMedia MediaType = MediaType("image")
-	VoiceMedia MediaType = MediaType("voice")
-	VideoMedia MediaType = MediaType("video")
-	ThumbMedia MediaType = MediaType("thumb")
-)
+// const (
+// 	ImageMedia MediaType = MediaType("image")
+// 	VoiceMedia MediaType = MediaType("voice")
+// 	VideoMedia MediaType = MediaType("video")
+// 	ThumbMedia MediaType = MediaType("thumb")
+// )
 
-type QRCodeType string
+// type QRCodeType string
 
-const (
-	QR_SCENE           QRCodeType = QRCodeType("QR_SCENE")           //短期 整型参数
-	QR_STR_SCENE       QRCodeType = QRCodeType("QR_STR_SCENE")       //短期 字符串参数
-	QR_LIMIT_SCENE     QRCodeType = QRCodeType("QR_LIMIT_SCENE")     //长期 整型参数
-	QR_LIMIT_STR_SCENE QRCodeType = QRCodeType("QR_LIMIT_STR_SCENE") //长期 字符串参数
-)
+// const (
+// 	QR_SCENE           QRCodeType = QRCodeType("QR_SCENE")           //短期 整型参数
+// 	QR_STR_SCENE       QRCodeType = QRCodeType("QR_STR_SCENE")       //短期 字符串参数
+// 	QR_LIMIT_SCENE     QRCodeType = QRCodeType("QR_LIMIT_SCENE")     //长期 整型参数
+// 	QR_LIMIT_STR_SCENE QRCodeType = QRCodeType("QR_LIMIT_STR_SCENE") //长期 字符串参数
+// )
 
-type QRCodeResponse struct {
-	Ticket        string `json:"ticket"`
-	ExpireSeconds int64  `json:"expire_seconds"`
-	Url           string `json:"url"`
-	WeiChatResponse
-}
+// type QRCodeResponse struct {
+// 	Ticket        string `json:"ticket"`
+// 	ExpireSeconds int64  `json:"expire_seconds"`
+// 	Url           string `json:"url"`
+// 	WeiChatResponse
+// }
 
-type ShortUrlResponse struct {
-	WeiChatResponse
-	ShortUrl string `json:"short_url"`
-}
+// type ShortUrlResponse struct {
+// 	WeiChatResponse
+// 	ShortUrl string `json:"short_url"`
+// }
 
 func Post(url string, paramBody []byte, header map[string]string) ([]byte, error) {
 	client := &http.Client{}
