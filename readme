@@ -1,0 +1,39 @@
+项目说明：
+	主要通过go,实现微信相关的接口
+	支持功能：
+		1.普通消息接收
+		2.AccessToken获取
+		3.发送模板消息
+		4.发送客服消息
+		5.上传临时素材
+		6.上传永久素材
+		7.Code 获取
+		8.域名 签名验证
+		9.生成参数二维码
+		10.长链接转换为短链接
+
+文件说明：
+	1.weiChatApi.go					微信接口API文件
+	2.weiChatApi_test.go			微信接口API测试文件
+	3.base.go						包含http相关方法 post,get ,postFile
+	4.customerMsg.go				客服消息相关结构体定义
+	5.receiveCommonMsg.go			普通消息相关结构体定义
+	6.response.go					微信响应相关结构体定义
+	7.templateMsg.go				微信模板消息相关结构体定义
+	8.type.go						特殊类型定义
+
+函数说明
+	WeiChat  微信API实体
+	ReceiveCommonMsg  接收普通消息
+	ReceiveFunc	普通消息回调函数
+	AccessToken  
+	SendTemplateMsg  发送模板消息
+	SendCustomMsg   发送客服消息
+	MakeSignature   url签名验证
+	Code  认证code获取(网页)
+	AuthAccessToken 用户通过code认证
+	UploadTemporaryMedia  上传临时素材
+	UploadPermanentMedia  上传永久素材
+	GenerateQRCode		  生成参数二维码
+	SetQRCodeExpireTime   设置短期参数二维码有效期
+	LongTransformShortUrl 长链接转换为短链接
