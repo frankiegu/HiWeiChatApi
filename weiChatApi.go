@@ -28,10 +28,25 @@ func WeiChat(logger *log.Logger, revFunc WxReceiveFunc) *WeiChatAPI {
 	}
 }
 
+//普通消息回调函数
 func (api *WeiChatAPI) ReceiveFunc(revFunc WxReceiveFunc) {
 	api.receiveFunc = revFunc
 }
 
+/**接收普通消息
+func xx(w http.ResponseWriter, r *http.Request) {
+ 	defer r.Body.Close()
+	data, _ := ioutil.ReadAll(r.Body) //获取post的数据
+	weiApi := HiWeiChatApi.WeiChat(nil, nil)
+	var rfun HiWeiChatApi.WxReceiveFunc = func(msg HiWeiChatApi.WxReceiveCommonMsg) error{
+		fmt.Println("hellow")
+                fmt.Printf("%v",msg)
+		return
+	}
+	weiApi.ReceiveFunc(rfun)
+	resp,err:=weiApi.ReceiveCommonMsg(data)
+}
+*/
 func (api *WeiChatAPI) ReceiveCommonMsg(msgData []byte) (WxReceiveCommonMsg, error) {
 
 	msg := WxReceiveCommonMsg{}
@@ -43,13 +58,7 @@ func (api *WeiChatAPI) ReceiveCommonMsg(msgData []byte) (WxReceiveCommonMsg, err
 	return msg, err
 }
 
-// func (api *WeiChatAPI) GenerateWxTemplateMsgFormat(openId string, templateId string, content map[string]interface{}) ([]byte, error) {
-// 	content["touser"] = openId
-// 	content["template_id"] = templateId
-// 	jsonData, err := json.Marshal(content)
-// 	return jsonData, err
-// }
-
+//获取AccessToken
 func (api *WeiChatAPI) AccessToken(appId, secret string) (string, error) {
 	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s", appId, secret)
 	body, err := Get(url, nil)
@@ -61,6 +70,7 @@ func (api *WeiChatAPI) AccessToken(appId, secret string) (string, error) {
 	return fmt.Sprintf("%v", result["access_token"]), err
 }
 
+//发送模板消息
 func (api *WeiChatAPI) SendTemplateMsg(accessToken string, wxt *WxTemplateMsg) (WeiChatResponse, error) {
 	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=%s", accessToken)
 	json, err := wxt.Marshal()
@@ -71,6 +81,7 @@ func (api *WeiChatAPI) SendTemplateMsg(accessToken string, wxt *WxTemplateMsg) (
 	return api.responseParse(body), err
 }
 
+//发送客服消息
 func (api *WeiChatAPI) SendCustomMsg(accessToken string, msg *CustomerMsg) (WeiChatResponse, error) {
 	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=%s", accessToken)
 	data, err := msg.Marshal()
@@ -85,6 +96,20 @@ func (api *WeiChatAPI) SendCustomMsg(accessToken string, msg *CustomerMsg) (WeiC
 	return api.responseParse(ret), err
 }
 
+/**域名签名验证
+ 	func xx(w http.ResponseWriter, r *http.Request) {
+	  	timestamp := strings.Join(r.Form["timestamp"], "")
+		nonce := strings.Join(r.Form["nonce"], "")
+		signatureGen := weiApi.MakeSignature("smart03", timestamp, nonce)
+		signatureIn := strings.Join(r.Form["signature"], "")
+		if signatureGen != signatureIn {
+			return
+		}
+		echostr := strings.Join(r.Form["echostr"], "")
+		fmt.Fprintf(w, echostr)
+ 	}
+
+*/
 func (api *WeiChatAPI) MakeSignature(token, timestamp, nonce string) string {
 	strs := []string{token, timestamp, nonce}
 	sort.Strings(strs)
@@ -93,6 +118,7 @@ func (api *WeiChatAPI) MakeSignature(token, timestamp, nonce string) string {
 	return fmt.Sprintf("%x", sha.Sum(nil))
 }
 
+//认证code获取
 func (api *WeiChatAPI) Code(appId, redirectUrl string) error {
 
 	url := fmt.Sprintf("https://open.weixin.qq.com/connect/oauth2/authorize?appid=%s&redirect_uri=%s&response_type=code&scope=snsapi_base&state=1#wechat_redirect",
@@ -100,11 +126,14 @@ func (api *WeiChatAPI) Code(appId, redirectUrl string) error {
 	_, err := Get(url, nil)
 	return err
 }
+
+//用户认知
 func (api *WeiChatAPI) AuthAccessToken(appId, secret, code string) string {
 	url := fmt.Sprintf("https://api.weixin.qq.com/sns/oauth2/access_token?appid=%s&secret=%s&code=%s&grant_type=authorization_code", appId, secret, code)
 	body, _ := Get(url, nil)
 	return string(body)
 }
+
 func (api *WeiChatAPI) responseParse(resp []byte) WeiChatResponse {
 	wxRe := WeiChatResponse{}
 	if resp == nil || len(resp) < 1 {
@@ -114,29 +143,9 @@ func (api *WeiChatAPI) responseParse(resp []byte) WeiChatResponse {
 	return wxRe
 }
 
-type MediaReponse struct {
-	Type     string `json:"type"`
-	MediaId  string `json:"media_id"`
-	CreateAt int    `json:"create_at"`
-	WeiChatResponse
-}
-
-//{"type":"TYPE","media_id":"MEDIA_ID","created_at":123456789}
+//上传临时素材
 func (api *WeiChatAPI) UploadTemporaryMedia(accessToken string, file string, mediaType MediaType) (MediaReponse, error) {
 	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/media/upload?access_token=%s&type=%s", accessToken, mediaType)
-	fmt.Println(url)
-	meRe := MediaReponse{}
-	body, err := PostFile(url, nil, "media", file)
-	if err != nil {
-		return meRe, err
-	}
-	fmt.Println(string(body), err)
-	json.Unmarshal(body, &meRe)
-	return meRe, nil
-}
-func (api *WeiChatAPI) UploadPermanentMedia(accessToken string, file string, mediaType MediaType) (MediaReponse, error) {
-	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/material/add_material?access_token=%s&type=%s", accessToken, mediaType)
-	fmt.Println(url)
 	meRe := MediaReponse{}
 	body, err := PostFile(url, nil, "media", file)
 	if err != nil {
@@ -146,6 +155,19 @@ func (api *WeiChatAPI) UploadPermanentMedia(accessToken string, file string, med
 	return meRe, nil
 }
 
+//上传永久素材
+func (api *WeiChatAPI) UploadPermanentMedia(accessToken string, file string, mediaType MediaType) (MediaReponse, error) {
+	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/material/add_material?access_token=%s&type=%s", accessToken, mediaType)
+	meRe := MediaReponse{}
+	body, err := PostFile(url, nil, "media", file)
+	if err != nil {
+		return meRe, err
+	}
+	json.Unmarshal(body, &meRe)
+	return meRe, nil
+}
+
+//生成参数二维码
 func (api *WeiChatAPI) GenerateQRCode(accessToken string, scene interface{}, qrType QRCodeType) (QRCodeResponse, error) {
 	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=%s", accessToken)
 	qrStr := fmt.Sprintf("%s", qrType)
@@ -159,8 +181,10 @@ func (api *WeiChatAPI) GenerateQRCode(accessToken string, scene interface{}, qrT
 		QR_LIMIT_SCENE:     "scene_id",
 		QR_LIMIT_STR_SCENE: "scene_str",
 	}
+
 	qrResp := QRCodeResponse{}
 	key := keyMap[qrType]
+
 	if qrStr == "QR_SCENE" || qrStr == "QR_STR_SCENE" {
 		postData["action_info"] = map[string]map[string]interface{}{
 			"scene": map[string]interface{}{key: scene},
@@ -172,6 +196,7 @@ func (api *WeiChatAPI) GenerateQRCode(accessToken string, scene interface{}, qrT
 	} else {
 		return qrResp, fmt.Errorf("undefined qrType:%s", qrStr)
 	}
+
 	postDataByte, err := json.Marshal(postData)
 	if err != nil {
 		return qrResp, err
@@ -181,17 +206,21 @@ func (api *WeiChatAPI) GenerateQRCode(accessToken string, scene interface{}, qrT
 	if err != nil {
 		return qrResp, err
 	}
-	fmt.Println(string(body), err)
 	json.Unmarshal(body, &qrResp)
 	return qrResp, nil
 }
+
+//设置短期二维码有效时间
 func (api *WeiChatAPI) SetQRCodeExpireTime(tm int) {
 	api.qrExpireTime = tm
 }
+
+//获取短期二维码有效时间
 func (api *WeiChatAPI) qRCodeExpireTime() int {
 	return api.qrExpireTime
 }
 
+//长链接转换为短链接
 func (api *WeiChatAPI) LongTransformShortUrl(accessToken, longUrl string) (ShortUrlResponse, error) {
 	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/shorturl?access_token=%s", accessToken)
 	postData := make(map[string]string, 2)

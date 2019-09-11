@@ -17,6 +17,7 @@ func (c *CustomerMsg) Marshal() ([]byte, error) {
 	return data, err
 }
 
+//图文消息
 type customerNewsMsg struct {
 	ToUser             string `json:"touser"`
 	MsgType            string `json:"msgtype"`
@@ -32,6 +33,13 @@ type customeNewArticleEle struct {
 	PicUrl      string `json:'picurl'`
 }
 
+/**实例化图片消息
+ * toUser:openId
+ * title:
+ * desc:
+ * url:跳转链接
+ * picUrl:图片链接
+ */
 func NewCustomerNewsMsg(toUser string, title string, desc string, url string, picUrl string) *CustomerMsg {
 
 	ele := customeNewArticleEle{
@@ -54,16 +62,6 @@ func NewCustomerNewsMsg(toUser string, title string, desc string, url string, pi
 	}
 }
 
-// func NewCustomeNewArticleEle(title string, desc string, url string, picUrl string) customerNewArticle {
-// 	ele := customeNewArticleEle{
-// 		Title:       title,
-// 		Description: desc,
-// 		Url:         url,
-// 		PicUrl:      picUrl,
-// 	}
-// 	return customerNewArticle{Articles: ele}
-// }
-
 type customerTextMsg struct {
 	ToUser              string `json:"touser"`
 	MsgType             string `json:"msgtype"`
@@ -73,6 +71,11 @@ type customerTextContent struct {
 	Content string `json:"content"`
 }
 
+/**
+ * 实例化文字消息
+ * toUser:openId
+ * content:文本内容
+ */
 func NewCustomerTextMsg(toUser string, content string) *CustomerMsg {
 	text := customerTextContent{Content: content}
 	msg := customerTextMsg{
@@ -94,6 +97,11 @@ type customerImageContent struct {
 	MediaId string `json:"media_id"`
 }
 
+/**
+ * 实例化图片消息
+ * toUser:openId
+ * mediaId:微信媒体ID
+ */
 func NewCustomerImageMsg(toUser string, mediaId string) *CustomerMsg {
 	Media := customerImageContent{MediaId: mediaId}
 	msg := customerImageMsg{
