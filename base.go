@@ -37,7 +37,38 @@ func Post(url string, paramBody []byte, header map[string]string) ([]byte, error
 	return body, nil
 }
 
-//Post上传文件
+/**Post上传文件
+ * [PostFile description]
+ * @param {[type]} url           string            [description]
+ * @param {[type]} params        map[string]string [description]
+ * @param {[type]} fileFieldName [description]
+ * @param {[type]} path          string)           ([]byte,      error [description]
+ //结束函数
+ func uploadHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	reader,err := r.MultipartReader()
+	if err != nil {
+		http.Error(w,err.Error(),http.StatusInternalServerError)
+		return
+	}
+	for {
+		part,err := reader.NextPart()
+		if err == io.EOF {
+			break;
+		}
+		fmt.Printf("FileName=[%s],FormName[%s]\n",part.FileName(),part.FormName())
+		if part.FileName() == "" {  //非文件属性值
+		  data,_ := ioutil.ReadAll(part)
+		  fmt.Printf("FormData=[%s]\n",string(data))
+		} else { //文件
+			dst,_ := os.Create("/tmp/"+part.FileName()+".upload")
+			defer dst.Close()
+			io.Copy(dst,part)
+		}
+	}
+	fmt.Fprintf(w, "OK")
+}
+*/
 func PostFile(url string, params map[string]string, fileFieldName, path string) ([]byte, error) {
 	file, err := os.Open(path)
 	if err != nil {
